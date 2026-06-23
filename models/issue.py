@@ -10,10 +10,13 @@ class JiraIssue(db.Model):
         primary_key=True
     )
 
+    # Jira Issue ID
     issue_id = db.Column(
-        db.String(100)
+        db.String(100),
+        unique=True
     )
 
+    # MCP-1, MCP-2...
     issue_key = db.Column(
         db.String(100),
         unique=True
@@ -31,8 +34,40 @@ class JiraIssue(db.Model):
         db.String(255)
     )
 
+    reporter = db.Column(
+        db.String(255)
+    )
+
     priority = db.Column(
         db.String(100)
+    )
+
+    due_date = db.Column(
+        db.String(100)
+    )
+
+    start_date = db.Column(
+        db.String(100)
+    )
+
+    parent_issue_key = db.Column(
+        db.String(100)
+    )
+
+    labels = db.Column(
+        db.Text
+    )
+
+    team = db.Column(
+        db.String(255)
+    )
+
+    issue_type = db.Column(
+        db.String(100)
+    )
+
+    description = db.Column(
+        db.Text
     )
 
     created_at = db.Column(
@@ -45,5 +80,7 @@ class JiraIssue(db.Model):
 
     project_id = db.Column(
         db.Integer,
-        db.ForeignKey("jira_projects.id")
+        db.ForeignKey(
+            "jira_projects.id"
+        )
     )

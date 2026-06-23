@@ -3,10 +3,16 @@ from flask import Blueprint, jsonify
 from models.issue import JiraIssue
 from services.issue_sync import IssueSync
 
-issue_bp = Blueprint("issue", __name__)
+issue_bp = Blueprint(
+    "issue",
+    __name__
+)
 
 
-@issue_bp.route("/issues", methods=["GET"])
+@issue_bp.route(
+    "/issues",
+    methods=["GET"]
+)
 def get_issues():
 
     try:
@@ -18,15 +24,44 @@ def get_issues():
         for issue in issues:
 
             result.append({
+
                 "id": issue.issue_id,
+
                 "key": issue.issue_key,
+
                 "summary": issue.summary,
+
+                "description": issue.description,
+
                 "status": issue.status,
+
+                "issue_type": issue.issue_type,
+
                 "assignee": issue.assignee,
+
+                "reporter": issue.reporter,
+
                 "priority": issue.priority,
-                "project_id": issue.project_id,
-                "created_at": issue.created_at,
-                "updated_at": issue.updated_at
+
+                "due_date": issue.due_date,
+
+                "start_date": issue.start_date,
+
+                "team": issue.team,
+
+                "labels": issue.labels,
+
+                "parent_issue_key":
+                issue.parent_issue_key,
+
+                "project_id":
+                issue.project_id,
+
+                "created_at":
+                issue.created_at,
+
+                "updated_at":
+                issue.updated_at
             })
 
         return jsonify({
@@ -43,7 +78,10 @@ def get_issues():
         }), 500
 
 
-@issue_bp.route("/issues/<issue_key>", methods=["GET"])
+@issue_bp.route(
+    "/issues/<issue_key>",
+    methods=["GET"]
+)
 def get_issue(issue_key):
 
     try:
@@ -62,15 +100,44 @@ def get_issue(issue_key):
         return jsonify({
             "success": True,
             "data": {
+
                 "id": issue.issue_id,
+
                 "key": issue.issue_key,
+
                 "summary": issue.summary,
+
+                "description": issue.description,
+
                 "status": issue.status,
+
+                "issue_type": issue.issue_type,
+
                 "assignee": issue.assignee,
+
+                "reporter": issue.reporter,
+
                 "priority": issue.priority,
-                "project_id": issue.project_id,
-                "created_at": issue.created_at,
-                "updated_at": issue.updated_at
+
+                "due_date": issue.due_date,
+
+                "start_date": issue.start_date,
+
+                "team": issue.team,
+
+                "labels": issue.labels,
+
+                "parent_issue_key":
+                issue.parent_issue_key,
+
+                "project_id":
+                issue.project_id,
+
+                "created_at":
+                issue.created_at,
+
+                "updated_at":
+                issue.updated_at
             }
         }), 200
 
@@ -82,7 +149,10 @@ def get_issue(issue_key):
         }), 500
 
 
-@issue_bp.route("/sync/issues", methods=["GET"])
+@issue_bp.route(
+    "/sync/issues",
+    methods=["GET"]
+)
 def sync_issues():
 
     try:

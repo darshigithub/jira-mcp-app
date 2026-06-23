@@ -34,7 +34,7 @@ def init_scheduler(app):
     scheduler.add_job(
         sync_issues,
         trigger="interval",
-        minutes=10,  # we can mannuly set this time interval for this job
+        minutes=60,  # we can mannuly set this time interval for this job
         id="issue_sync"
     )
 

@@ -2,6 +2,7 @@ from services.jira_client import JiraClient
 from models.issue import JiraIssue
 from models.comment import JiraComment
 from database.db import db
+from utils.adf_parser import extract_text_from_adf
 
 
 class CommentSync:
@@ -44,8 +45,12 @@ class CommentSync:
                             ""
                         )
 
-                    body = str(
-                        comment.get("body", "")
+                    # body = str(
+                    #     comment.get("body", "")
+                    # )
+
+                    body = extract_text_from_adf(
+                        comment.get("body", {})
                     )
 
                     parent_id = comment.get(
