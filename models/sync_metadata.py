@@ -1,3 +1,5 @@
+# models/sync_metadata.py
+
 from database.db import db
 
 class SyncMetadata(db.Model):
@@ -6,6 +8,9 @@ class SyncMetadata(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    sync_name = db.Column(db.String(100))
+    sync_name = db.Column(
+        db.String(50),
+        unique=True
+    )
 
-    last_sync = db.Column(db.DateTime)
+    last_sync_time = db.Column(db.DateTime)

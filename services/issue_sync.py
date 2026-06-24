@@ -4,9 +4,11 @@ from models.project import JiraProject
 from database.db import db
 from utils.adf_parser import extract_text_from_adf 
 
-import json
-import traceback
+from models.sync_metadata import SyncMetadata
+from datetime import datetime
 
+import traceback
+import os
 
 class IssueSync:
 
@@ -19,7 +21,50 @@ class IssueSync:
 
             jira = JiraClient()
 
-            data = jira.get_issues("MCP")
+            sync_record = SyncMetadata.query.filter_by(
+                sync_name="issue_sync"
+            ).first()
+
+            # First Sync
+            if not sync_record:
+
+                print("Running Full Issue Sync...")
+
+                lookback_days = int(
+                    os.getenv(
+                        "SYNC_LOOKBACK_DAYS",
+                        25
+                    )
+                )
+
+                print(
+                    f"Fetching last {lookback_days} days issues..."
+                )
+
+                data = jira.get_recent_issues(
+                    project_key="MCP",
+                    days=lookback_days
+                )
+
+            # Incremental Sync
+            else:
+
+                print(
+                    f"Running Incremental Sync "
+                    f"since {sync_record.last_sync_time}"
+                )
+
+                updated_since = (
+                    sync_record.last_sync_time
+                    .strftime("%Y-%m-%d %H:%M")
+                )
+
+                print(f"Updated Since: {updated_since}")
+
+                data = jira.get_updated_issues(
+                    project_key="MCP",
+                    updated_since=updated_since
+                )
 
             issues = data.get(
                 "issues",
@@ -132,6 +177,8 @@ class IssueSync:
                 # CUSTOM FIELDS
                 # Replace IDs after checking Jira field API
                 # --------------------------------------------------
+
+                # We need to edit this fields after after getting api response 
 
                 team = fields.get(
                     "customfield_10001"
@@ -268,6 +315,64 @@ class IssueSync:
                     print(
                         f"Inserted: {key}"
                     )
+
+            # Update sync cursor using latest Jira issue timestamp
+            sync_record = SyncMetadata.query.filter_by(
+                sync_name="issue_sync"
+            ).first()
+
+            latest_updated = None
+
+            for issue in issues:
+
+                details = jira.get_issue_details(
+                    issue["id"]
+                )
+
+                updated_str = (
+                    details.get("fields", {})
+                    .get("updated")
+                )
+
+                if updated_str:
+
+                    jira_updated = datetime.strptime(
+                        updated_str,
+                        "%Y-%m-%dT%H:%M:%S.%f%z"
+                    )
+
+                    if (
+                        latest_updated is None
+                        or jira_updated > latest_updated
+                    ):
+                        latest_updated = jira_updated
+
+            if latest_updated:
+
+                if not sync_record:
+
+                    sync_record = SyncMetadata(
+                        sync_name="issue_sync",
+                        last_sync_time=latest_updated
+                    )
+
+                    db.session.add(sync_record)
+
+                else:
+
+                    sync_record.last_sync_time = latest_updated
+
+                print(
+                    f"Updated Sync Cursor: "
+                    f"{latest_updated}"
+                )
+
+            else:
+
+                print(
+                    "No issues found. "
+                    "Keeping existing sync cursor."
+                )
 
             db.session.commit()
 

@@ -19,14 +19,14 @@ class JiraClient:
             "Content-Type": "application/json"
         }
 
-   
+    # -------------------------
     # Projects
+    # -------------------------
 
     def get_projects(self):
 
         url = f"{self.base_url}/rest/api/3/project"
 
-        # Get Projects endpoint
         response = requests.get(
             url,
             auth=self.auth,
@@ -36,14 +36,11 @@ class JiraClient:
         response.raise_for_status()
 
         return response.json()
-    
-    # Project
 
     def get_project(self, project_key):
 
         url = f"{self.base_url}/rest/api/3/project/{project_key}"
 
-        # Get Projects endpoint
         response = requests.get(
             url,
             auth=self.auth,
@@ -54,13 +51,15 @@ class JiraClient:
 
         return response.json()
 
-    # Issues
+    # -------------------------
+    # Full Issue Sync
+    # -------------------------
 
     def get_issues(
         self,
         project_key="MCP",
         start_at=0,
-        max_results=100  # manual we can give
+        max_results=100
     ):
 
         url = f"{self.base_url}/rest/api/3/search/jql"
@@ -71,7 +70,6 @@ class JiraClient:
             "maxResults": max_results
         }
 
-        # get method 
         response = requests.get(
             url,
             params=params,
@@ -83,23 +81,9 @@ class JiraClient:
 
         return response.json()
 
-    def get_issue_details(self, issue_id):
-
-        url = f"{self.base_url}/rest/api/3/issue/{issue_id}"
-
-        # Get issue details endpoint
-        response = requests.get(
-            url,
-            auth=self.auth,
-            headers=self.headers
-        )
-
-        response.raise_for_status()
-
-        return response.json()
-
-
-    # Incremental Sync    
+    # -------------------------
+    # Incremental Issue Sync
+    # -------------------------
 
     def get_updated_issues(
         self,
@@ -110,12 +94,27 @@ class JiraClient:
     ):
 
         if updated_since:
+
+            print(f"Updated Since Raw: {updated_since}")
+
             jql = (
                 f'project = {project_key} '
-                f'AND updated >= "{updated_since}"'
+                f'AND updated >= "{updated_since}" '
+                f'ORDER BY updated ASC'
             )
+
         else:
-            jql = f'project = {project_key}'
+
+            jql = (
+                f'project = {project_key} '
+                f'AND updated >= -2d '
+                f'ORDER BY updated ASC'
+            )
+
+        print("=" * 60)
+        print("INCREMENTAL JQL")
+        print(jql)
+        print("=" * 60)
 
         url = f"{self.base_url}/rest/api/3/search/jql"
 
@@ -132,15 +131,35 @@ class JiraClient:
             headers=self.headers
         )
 
+        print("=" * 60)
+        print("STATUS CODE")
+        print(response.status_code)
+        print("=" * 60)
+
         response.raise_for_status()
 
-        return response.json()
-    
-    def get_issue_comments(self, issue_id):
+        data = response.json()
 
-        url = f"{self.base_url}/rest/api/3/issue/{issue_id}/comment"
+        print("=" * 60)
+        print("RAW JIRA RESPONSE")
+        print(data)
+        print("=" * 60)
 
-        # Get Isuue comment endpoint
+        print(
+            f"Total Issues Returned: "
+            f"{len(data.get('issues', []))}"
+        )
+
+        return data
+
+    # -------------------------
+    # Issue Details
+    # -------------------------
+
+    def get_issue_details(self, issue_id):
+
+        url = f"{self.base_url}/rest/api/3/issue/{issue_id}"
+
         response = requests.get(
             url,
             auth=self.auth,
@@ -150,11 +169,30 @@ class JiraClient:
         response.raise_for_status()
 
         return response.json()
-    
-    def get_issue_history(
-        self,
-        issue_id
-    ):
+
+    # -------------------------
+    # Comments
+    # -------------------------
+
+    def get_issue_comments(self, issue_id):
+
+        url = f"{self.base_url}/rest/api/3/issue/{issue_id}/comment"
+
+        response = requests.get(
+            url,
+            auth=self.auth,
+            headers=self.headers
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    # -------------------------
+    # Changelog / History
+    # -------------------------
+
+    def get_issue_history(self, issue_id):
 
         url = (
             f"{self.base_url}"
@@ -165,6 +203,43 @@ class JiraClient:
 
         response = requests.get(
             url,
+            auth=self.auth,
+            headers=self.headers
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+    
+    # Include if required extra feature 
+    
+    def get_recent_issues(
+        self,
+        project_key="MCP",
+        days=os.getenv(
+            "SYNC_LOOKBACK_DAYS",
+        ),
+        start_at=0,
+        max_results=100
+    ):
+
+        jql = (
+            f"project = {project_key} "
+            f"AND updated >= -{days}d "
+            f"ORDER BY updated DESC"
+        )
+
+        url = f"{self.base_url}/rest/api/3/search/jql"
+
+        params = {
+            "jql": jql,
+            "startAt": start_at,
+            "maxResults": max_results
+        }
+
+        response = requests.get(
+            url,
+            params=params,
             auth=self.auth,
             headers=self.headers
         )

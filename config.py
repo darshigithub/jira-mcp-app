@@ -25,3 +25,10 @@ class Config:
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    SYNC_LOOKBACK_DAYS = int(
+        os.getenv(
+            "SYNC_LOOKBACK_DAYS",
+            25
+        )
+    )

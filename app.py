@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 
 from config import Config
 from database.db import db
@@ -9,7 +9,7 @@ from routes.dashboard_routes import dashboard_bp
 from routes.comment_routes import comment_bp
 from routes.histroy_routes import history_bp
 
-from scheduler.jobs import init_scheduler
+from services.sync_all import SyncAll
 
 
 app = Flask(__name__)
@@ -27,16 +27,24 @@ app.register_blueprint(dashboard_bp)
 app.register_blueprint(comment_bp)
 app.register_blueprint(history_bp)
 
-# Start scheduler AFTER app is created
-init_scheduler(app)
-
-
 @app.route("/")
 def home():
     return {
         "status": "running"
     }
 
+# sync/all endpoint to sync all the service data into sqllite DB
+@app.route("/sync/all")
+def sync_all():
+
+    result = SyncAll().sync()
+
+    return jsonify(result)
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(
+        debug=True,
+        use_reloader=False
+    )
