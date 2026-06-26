@@ -111,6 +111,29 @@ class CommentSync:
                             "displayName",
                             ""
                         )
+                    
+                    # ------------------------------------
+                    # Collect additional/custom fields
+                    # ------------------------------------
+
+                    STANDARD_FIELDS = {
+                        "id",
+                        "author",
+                        "body",
+                        "created",
+                        "updated",
+                        "jsdPublic",
+                        "parentId",
+                        "self"
+                    }
+
+                    custom_fields = {}
+
+                    for field_name, value in comment.items():
+
+                        if field_name not in STANDARD_FIELDS:
+
+                            custom_fields[field_name] = value
 
                     body = extract_text_from_adf(
                         comment.get(
@@ -160,6 +183,8 @@ class CommentSync:
 
                         existing.updated_at = updated_at
 
+                        existing.custom_fields = custom_fields
+
                         updated += 1
 
                         print(
@@ -189,7 +214,9 @@ class CommentSync:
 
                             created_at=created_at,
 
-                            updated_at=updated_at
+                            updated_at=updated_at,
+
+                            custom_fields=custom_fields
                         )
 
                         db.session.add(

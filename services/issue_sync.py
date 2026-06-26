@@ -42,7 +42,10 @@ class IssueSync:
                 )
 
                 data = jira.get_recent_issues(
-                    project_key="MCP",
+                    project_key=os.getenv(
+                        "JIRA_PROJECT_KEY",
+                        "MCP"
+                    ),
                     days=lookback_days
                 )
 
@@ -62,7 +65,10 @@ class IssueSync:
                 print(f"Updated Since: {updated_since}")
 
                 data = jira.get_updated_issues(
-                    project_key="MCP",
+                    project_key=os.getenv(
+                        "JIRA_PROJECT_KEY",
+                        "MCP"
+                    ),
                     updated_since=updated_since
                 )
 
@@ -89,6 +95,37 @@ class IssueSync:
                     "fields",
                     {}
                 )
+
+                # ------------------------------------
+                # Collect all custom fields
+                # ------------------------------------
+
+                STANDARD_FIELDS = {
+                    "summary",
+                    "description",
+                    "status",
+                    "assignee",
+                    "reporter",
+                    "priority",
+                    "issuetype",
+                    "labels",
+                    "duedate",
+                    "created",
+                    "updated",
+                    "project",
+                    "parent"
+                }
+
+                custom_fields = {}
+
+                for field_name, value in fields.items():
+
+                    if (
+                        field_name.startswith("customfield_")
+                        or field_name not in STANDARD_FIELDS
+                    ):
+
+                        custom_fields[field_name] = value
 
                 summary = fields.get(
                     "summary"
@@ -255,6 +292,8 @@ class IssueSync:
                         else None
                     )
 
+                    existing.custom_fields = custom_fields
+
                     updated_count += 1
 
                     print(
@@ -303,7 +342,9 @@ class IssueSync:
                             project.id
                             if project
                             else None
-                        )
+                        ),
+
+                        custom_fields=custom_fields
                     )
 
                     db.session.add(

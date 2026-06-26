@@ -57,10 +57,22 @@ class JiraClient:
 
     def get_issues(
         self,
-        project_key="MCP",
+        project_key=None,
         start_at=0,
-        max_results=100
+        max_results=None
     ):
+
+        project_key = project_key or os.getenv(
+            "JIRA_PROJECT_KEY",
+            "MCP"
+        )
+
+        max_results = max_results or int(
+            os.getenv(
+                "MAX_RESULTS",
+                100
+            )
+        )
 
         url = f"{self.base_url}/rest/api/3/search/jql"
 
@@ -87,11 +99,23 @@ class JiraClient:
 
     def get_updated_issues(
         self,
-        project_key="MCP",
+        project_key=None,
         updated_since=None,
         start_at=0,
-        max_results=100
+        max_results=None
     ):
+
+        project_key = project_key or os.getenv(
+            "JIRA_PROJECT_KEY",
+            "MCP"
+        )
+
+        max_results = max_results or int(
+            os.getenv(
+                "MAX_RESULTS",
+                100
+            )
+        )
 
         if updated_since:
 
@@ -215,13 +239,30 @@ class JiraClient:
     
     def get_recent_issues(
         self,
-        project_key="MCP",
-        days=os.getenv(
-            "SYNC_LOOKBACK_DAYS",
-        ),
+        project_key=None,
+        days=None,
         start_at=0,
-        max_results=100
+        max_results=None
     ):
+
+        project_key = project_key or os.getenv(
+            "JIRA_PROJECT_KEY",
+            "MCP"
+        )
+
+        days = days or int(
+            os.getenv(
+                "SYNC_LOOKBACK_DAYS",
+                30
+            )
+        )
+
+        max_results = max_results or int(
+            os.getenv(
+                "MAX_RESULTS",
+                100
+            )
+        )
 
         jql = (
             f"project = {project_key} "

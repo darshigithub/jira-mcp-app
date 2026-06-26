@@ -52,16 +52,25 @@ def get_issues():
                 "labels": issue.labels,
 
                 "parent_issue_key":
-                issue.parent_issue_key,
+                    issue.parent_issue_key,
 
                 "project_id":
-                issue.project_id,
+                    issue.project_id,
 
                 "created_at":
-                issue.created_at,
+                    issue.created_at,
 
                 "updated_at":
-                issue.updated_at
+                    issue.updated_at,
+
+                # NEW
+                "custom_fields":
+                    issue.custom_fields,
+
+                # NEW
+                "raw_issue":
+                    issue.raw_issue
+
             })
 
         return jsonify({
@@ -98,7 +107,9 @@ def get_issue(issue_key):
             }), 404
 
         return jsonify({
+
             "success": True,
+
             "data": {
 
                 "id": issue.issue_id,
@@ -128,17 +139,27 @@ def get_issue(issue_key):
                 "labels": issue.labels,
 
                 "parent_issue_key":
-                issue.parent_issue_key,
+                    issue.parent_issue_key,
 
                 "project_id":
-                issue.project_id,
+                    issue.project_id,
 
                 "created_at":
-                issue.created_at,
+                    issue.created_at,
 
                 "updated_at":
-                issue.updated_at
+                    issue.updated_at,
+
+                # NEW
+                "custom_fields":
+                    issue.custom_fields,
+
+                # NEW
+                "raw_issue":
+                    issue.raw_issue
+
             }
+
         }), 200
 
     except Exception as e:

@@ -15,9 +15,18 @@ comment_bp = Blueprint(
 )
 def sync_comments():
 
-    result = CommentSync().sync()
+    try:
 
-    return jsonify(result)
+        result = CommentSync().sync()
+
+        return jsonify(result), 200
+
+    except Exception as e:
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 
 @comment_bp.route(
@@ -26,28 +35,137 @@ def sync_comments():
 )
 def get_comments():
 
-    comments = JiraComment.query.all()
+    try:
 
-    return jsonify([
-        {
-            "id": c.id,
-            "comment_id": c.comment_id,
-            "issue_id": c.issue_id,
+        comments = JiraComment.query.all()
 
-            "jira_parent_comment_id":
-                c.jira_parent_comment_id,
+        result = []
 
-            "author": c.author,
+        for c in comments:
 
-            "body": c.body,
+            result.append({
 
-            "jsd_public": c.jsd_public,
+                "id": c.id,
 
-            "created_at":
-                c.created_at,
+                "comment_id": c.comment_id,
 
-            "updated_at":
-                c.updated_at
-        }
-        for c in comments
-    ])
+                "issue_id": c.issue_id,
+
+                "jira_parent_comment_id":
+                    c.jira_parent_comment_id,
+
+                "parent_comment_id":
+                    c.parent_comment_id,
+
+                "author":
+                    c.author,
+
+                "body":
+                    c.body,
+
+                "jsd_public":
+                    c.jsd_public,
+
+                "created_at":
+                    c.created_at,
+
+                "updated_at":
+                    c.updated_at,
+
+                "custom_fields":
+                    c.custom_fields
+
+            })
+
+        return jsonify({
+
+            "success": True,
+
+            "count": len(result),
+
+            "data": result
+
+        }), 200
+
+    except Exception as e:
+
+        return jsonify({
+
+            "success": False,
+
+            "error": str(e)
+
+        }), 500
+
+
+@comment_bp.route(
+    "/comments/<comment_id>",
+    methods=["GET"]
+)
+def get_comment(comment_id):
+
+    try:
+
+        comment = JiraComment.query.filter_by(
+            comment_id=comment_id
+        ).first()
+
+        if not comment:
+
+            return jsonify({
+
+                "success": False,
+
+                "message": "Comment not found"
+
+            }), 404
+
+        return jsonify({
+
+            "success": True,
+
+            "data": {
+
+                "id": comment.id,
+
+                "comment_id": comment.comment_id,
+
+                "issue_id": comment.issue_id,
+
+                "jira_parent_comment_id":
+                    comment.jira_parent_comment_id,
+
+                "parent_comment_id":
+                    comment.parent_comment_id,
+
+                "author":
+                    comment.author,
+
+                "body":
+                    comment.body,
+
+                "jsd_public":
+                    comment.jsd_public,
+
+                "created_at":
+                    comment.created_at,
+
+                "updated_at":
+                    comment.updated_at,
+
+                "custom_fields":
+                    comment.custom_fields
+
+            }
+
+        }), 200
+
+    except Exception as e:
+
+        return jsonify({
+
+            "success": False,
+
+            "error": str(e)
+
+        }), 500

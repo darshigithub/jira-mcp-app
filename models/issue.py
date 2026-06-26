@@ -84,3 +84,17 @@ class JiraIssue(db.Model):
             "jira_projects.id"
         )
     )
+
+    # -----------------------------
+    # NEW COLUMNS
+    # -----------------------------
+
+    # Stores all Jira custom fields
+    custom_fields = db.Column(
+        db.JSON
+    )
+
+    # Stores complete Jira issue response
+    raw_issue = db.Column(
+        db.JSON
+    )

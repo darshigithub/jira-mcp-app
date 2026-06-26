@@ -150,6 +150,10 @@ class HistorySync:
                             "field"
                         )
 
+                        field_type = item.get(
+                            "fieldtype"
+                        )
+
                         old_value = item.get(
                             "fromString"
                         )
@@ -180,6 +184,10 @@ class HistorySync:
                                 field_name
                             )
 
+                            existing.field_type = (
+                                field_type
+                            )
+
                             existing.old_value = (
                                 old_value
                             )
@@ -201,32 +209,33 @@ class HistorySync:
 
                         else:
 
-                            history_record = (
-                                JiraIssueHistory(
+                            history_record = JiraIssueHistory(
 
-                                    history_id=
-                                    unique_history_id,
+                                history_id=
+                                unique_history_id,
 
-                                    issue_id=
-                                    issue.id,
+                                issue_id=
+                                issue.id,
 
-                                    author=
-                                    author,
+                                author=
+                                author,
 
-                                    field_name=
-                                    field_name,
+                                field_name=
+                                field_name,
 
-                                    old_value=
-                                    old_value,
+                                field_type=
+                                field_type,
 
-                                    new_value=
-                                    new_value,
+                                old_value=
+                                old_value,
 
-                                    changed_at=
-                                    changed_at
-                                )
+                                new_value=
+                                new_value,
+
+                                changed_at=
+                                changed_at
                             )
-
+                            
                             db.session.add(
                                 history_record
                             )

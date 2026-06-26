@@ -5,16 +5,21 @@ class JiraComment(db.Model):
 
     __tablename__ = "jira_comments"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     comment_id = db.Column(
         db.String(50),
-        unique=True
+        unique=True,
+        nullable=False
     )
 
     issue_id = db.Column(
         db.Integer,
-        db.ForeignKey("jira_issues.id")
+        db.ForeignKey("jira_issues.id"),
+        nullable=False
     )
 
     jira_parent_comment_id = db.Column(
@@ -28,12 +33,28 @@ class JiraComment(db.Model):
         nullable=True
     )
 
-    author = db.Column(db.String(255))
+    author = db.Column(
+        db.String(255)
+    )
 
-    body = db.Column(db.Text)
+    body = db.Column(
+        db.Text
+    )
 
-    created_at = db.Column(db.String(100))
+    created_at = db.Column(
+        db.String(100)
+    )
 
-    updated_at = db.Column(db.String(100))
+    updated_at = db.Column(
+        db.String(100)
+    )
 
-    jsd_public = db.Column(db.Boolean)
+    jsd_public = db.Column(
+        db.Boolean
+    )
+
+    # Store any future/custom Jira comment properties
+    custom_fields = db.Column(
+        db.JSON,
+        nullable=True
+    )

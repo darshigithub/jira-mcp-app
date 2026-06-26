@@ -28,8 +28,20 @@ class JiraIssueHistory(db.Model):
         db.String(255)
     )
 
+    # Example:
+    # status
+    # assignee
+    # priority
+    # customfield_10421
     field_name = db.Column(
         db.String(255)
+    )
+
+    # NEW
+    # jira
+    # custom
+    field_type = db.Column(
+        db.String(100)
     )
 
     old_value = db.Column(
